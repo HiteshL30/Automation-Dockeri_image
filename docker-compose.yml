@@ -3,24 +3,29 @@ version: "3.8"
 services:
 
   frontend:
-    image: yourdockerhubusername/frontend:latest
+    image: hitu30/frontend:latest
     container_name: frontend
     restart: always
     ports:
       - "80:80"
     depends_on:
       - backend
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
 
   backend:
-    image: yourdockerhubusername/backend:latest
+    image: hitu30/backend:latest
     container_name: backend
     restart: always
     ports:
       - "5000:5000"
-    env_file:
-      - ./backend/.env
+    environment:
+      - PORT=5000
+      - MONGO_URL=mongodb://mongo:27017/devops-demo
     depends_on:
       - mongo
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
 
   mongo:
     image: mongo:7
@@ -28,6 +33,18 @@ services:
     restart: always
     volumes:
       - mongo_data:/data/db
+    labels:
+      - "com.centurylinklabs.watchtower.enable=false"
+
+  watchtower:
+    image: containrrr/watchtower
+    container_name: watchtower
+    restart: always
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: --interval 30 --cleanup
+    environment:
+      - WATCHTOWER_LABEL_ENABLE=true
 
 volumes:
   mongo_data:
